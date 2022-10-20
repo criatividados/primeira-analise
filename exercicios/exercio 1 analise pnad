@@ -1,0 +1,24 @@
+library(rio)
+library(tidyverse)
+library(weights)
+import("pandac_2020_t1.fst")
+pnadc_2020 <- import("pnadc_2020_t1.fst")
+str(pnadc_2020)
+pnadc_2020 <- pnadc_2020 %>%
+  mutate(
+    renda_trabalho = VD4019,
+    log_renda_trabalho = log(VD4019),
+    anos_estudo = VD3005,
+    anos_estudo_numerica = as.numeric(VD3005),
+    peso = V1027) 
+media_ponderada_log_renda_trabalho <- weighted.mean(x = pnadc_2019$log_renda_trabalho, w = pnadc_2019$peso) 
+tabela_medias_ponderadas <-
+  pnadc_2020 %>%
+  summarise(media_log_renda = weighted.mean(x = log_renda_trabalho, w = peso, na.rm = T),
+            media_anos_estudo = weighted.mean(x = anos_estudo_numerica, w = peso, na.rm = T))
+tabela_medias_ponderadas %% 
+  ggplot(aes(x,w))
+pnadc_2020 %>%
+  ggplot(aes(x = log(renda_trabalho), weight = peso)) +
+  geom_density(col = "black", fill = "blue") +
+  scale_y_continuous(limits = c(0, 1.5)) # aqui é só pra delimitar os limites do eixo Y
